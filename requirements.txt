@@ -1,0 +1,4 @@
+pyChatGPT
+logging
+click
+twocaptcha
