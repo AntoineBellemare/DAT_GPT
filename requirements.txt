@@ -2,3 +2,5 @@ pyChatGPT
 logging
 click
 twocaptcha
+numpy
+dat
