@@ -1,8 +1,35 @@
 import pandas as pd
 import numpy as np
-
+import seaborn as sns
+import matplotlib.pyplot as plt
 from scipy.stats import ttest_ind
 from statsmodels.stats.multitest import multipletests
+
+def create_heatmap(mean_conf, variable, tvals_table, pvals_table, pal, order):
+    # Generate a mask for the upper triangle
+    mask = np.triu(np.ones_like(tvals_table, dtype=bool))
+
+    # Set up the matplotlib figure
+    fig, axs = plt.subplots(nrows=1, ncols=3, figsize=(20, len(mean_conf[variable].unique())*1.5))
+    sns.barplot(y=variable, x='mean', data=mean_conf, ax=axs[0], palette=pal, order=order)
+    axs[0].set_ylabel('Score')
+    axs[0].set_title('Mean Scores with Confidence Intervals')
+
+    # Generate the heat map for t-values
+    sns.heatmap(tvals_table, mask=mask, annot=True, fmt=".2f", cmap="magma",
+                cbar_kws={'label': 't-value'}, ax=axs[1])
+    axs[1].set_title('Contrasts - t-values')
+
+    # Generate the heat map for p-values
+    pval_stars = pvals_table.applymap(lambda x: '***' if x < 0.001 else '**' if x < 0.01 else '*' if x < 0.05 else '')
+    norm = plt.Normalize(vmin=np.nanmin(pvals_table.values), vmax=np.nanmax(pvals_table.values))
+    sns.heatmap(norm(pvals_table.values), mask=mask, annot=pval_stars, fmt="", cmap="magma",
+                cbar_kws={'label': 'p-value'}, ax=axs[2],norm=norm)
+    axs[2].set_title('Contrasts - p-values')
+
+    plt.tight_layout()
+    plt.show()
+
 
 def analyze_results(results_df, variable):
     variables = results_df[variable].unique()
