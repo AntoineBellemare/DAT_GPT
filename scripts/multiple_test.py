@@ -36,7 +36,7 @@ def create_heatmap(
         ax=axs[0],
         palette=pal,
         order=order,
-        ci=None,
+        errorbar=None,
     )
 
     # Add error bars to the barplot
