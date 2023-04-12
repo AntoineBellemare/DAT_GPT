@@ -10,7 +10,7 @@ def create_heatmap(mean_conf, variable, tvals_table, pvals_table, pal, order):
     mask = np.triu(np.ones_like(tvals_table, dtype=bool))
 
     # Set up the matplotlib figure
-    fig, axs = plt.subplots(nrows=1, ncols=3, figsize=(20, len(mean_conf[variable].unique())*1.5))
+    fig, axs = plt.subplots(nrows=1, ncols=3, figsize=(25, len(mean_conf[variable].unique())*1.2))
     sns.barplot(y=variable, x='mean', data=mean_conf, ax=axs[0], palette=pal, order=order)
     axs[0].set_ylabel('Score')
     axs[0].set_title('Mean Scores with Confidence Intervals')
@@ -23,7 +23,8 @@ def create_heatmap(mean_conf, variable, tvals_table, pvals_table, pal, order):
     # Generate the heat map for p-values
     pval_stars = pvals_table.applymap(lambda x: '***' if x < 0.001 else '**' if x < 0.01 else '*' if x < 0.05 else '')
     norm = plt.Normalize(vmin=np.nanmin(pvals_table.values), vmax=np.nanmax(pvals_table.values))
-    sns.heatmap(norm(pvals_table.values), mask=mask, annot=pval_stars, fmt="", cmap="magma",
+    pal_p = sns.color_palette("magma_r", as_cmap=True)
+    sns.heatmap(pd.DataFrame(norm(pvals_table.values)), mask=mask, annot=pval_stars, fmt="", cmap=pal_p,
                 cbar_kws={'label': 'p-value'}, ax=axs[2],norm=norm)
     axs[2].set_title('Contrasts - p-values')
 
@@ -31,8 +32,8 @@ def create_heatmap(mean_conf, variable, tvals_table, pvals_table, pal, order):
     plt.show()
 
 
-def analyze_results(results_df, variable):
-    variables = results_df[variable].unique()
+def analyze_results(results_df, variable, order):
+    variables = order
     n_variables = len(results_df[variable].unique())
     # Calculate mean and confidence interval for each model's distribution
     mean_conf = results_df.groupby(variable)['Score'].agg(['mean', 'sem'])
