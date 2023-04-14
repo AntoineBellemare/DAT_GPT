@@ -3,3 +3,8 @@ click
 twocaptcha
 numpy
 dat
+openai
+seaborn
+scipy
+dat
+anthropic

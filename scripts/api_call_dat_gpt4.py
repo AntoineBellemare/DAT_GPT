@@ -25,7 +25,8 @@ strategies = {"nothing":NOTHING,
               "opposites":STRATEGY_OPP,
               "thesaurus":STRATEGY_THE}
 # keys
-
+openai.organization = "org-mQ56VzDhHkSj8tfM9HJ9DXVq"
+openai.api_key = "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"
 
 def generate_response(text, temp):
     response = openai.ChatCompletion.create(model='gpt-4-0314', messages=[{"role":'assistant', "content":text}], temperature=temp)
