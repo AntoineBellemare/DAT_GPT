@@ -6,7 +6,7 @@ import click
 import logging
 import warnings
 warnings.filterwarnings('ignore')
-NOTHING="Make a list of these 10 words"
+NOTHING="Make a list of 10 words"
 YOUNG_NO="Please enter 10 words that are as different from each other as possible, in all meanings and uses of the words. Answer from the perspective of a child. Rules: Only single words in English. Only nouns (e.g., things, objects, concepts). No proper nouns (e.g., no specific people or places). No specialised vocabulary (e.g., no technical terms). Think of the words on your own (e.g., do not just look at objects in your surroundings).  Make a list of these 10 words, a single word in each entry of the list."
 NO_STRATEGY="Please enter 10 words that are as different from each other as possible, in all meanings and uses of the words. Rules: Only single words in English. Only nouns (e.g., things, objects, concepts). No proper nouns (e.g., no specific people or places). No specialised vocabulary (e.g., no technical terms). Think of the words on your own (e.g., do not just look at objects in your surroundings).  Make a list of these 10 words, a single word in each entry of the list."
 
@@ -25,11 +25,11 @@ strategies = {"nothing":NOTHING,
               "opposites":STRATEGY_OPP,
               "thesaurus":STRATEGY_THE}
 # keys
-openai.organization = "org-mQ56VzDhHkSj8tfM9HJ9DXVq"
-openai.api_key = "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"
+openai.api_key = 
+openai.organization = 
 
 def generate_response(text, temp):
-    response = openai.ChatCompletion.create(model='gpt-4-0314', messages=[{"role":'assistant', "content":text}], temperature=temp)
+    response = openai.ChatCompletion.create(model='gpt-3.5-turbo', messages=[{"role":'assistant', "content":text}], temperature=temp)
     return response['choices'][0]["message"]["content"].strip()
 
 @click.command()
