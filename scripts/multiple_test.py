@@ -147,7 +147,9 @@ def most_common_words(words_list, n):
     counter = collections.Counter(lowercase_words_list)
     return counter.most_common(n)
 
-def create_bar_plot(word_counts, n_lists=None, ylim=(0, 90), palette_name='Set2', save=False, filename='bar_plot.png', title=' ', alpha=0.8):
+def create_bar_plot(word_counts, n_lists=None, ylim=(0, 90), palette_name='Set2', save=False, modelname=' ', temp=' ', strategy=' ', alpha=0.8):
+    title = '{} ({} temperature)'.format(modelname, temp)
+    filename = '{}_word-counts_{}_{}.png'.format(modelname, temp, strategy)
     if n_lists is None:
         n_lists = len(word_counts)/10
     words, counts = zip(*word_counts)
