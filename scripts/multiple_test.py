@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
+import collections
 from scipy.stats import ttest_ind
 from statsmodels.stats.multitest import multipletests
 
@@ -138,3 +139,43 @@ def analyze_results(results_df, variable, order):
             tvals_table.loc[model2, model1] = tvals[j, i]
 
     return mean_conf, pvals_table, tvals_table
+
+
+def most_common_words(words_list, n):
+    # Convert each word to lowercase
+    lowercase_words_list = [word.lower() for word in words_list]
+    counter = collections.Counter(lowercase_words_list)
+    return counter.most_common(n)
+
+def create_bar_plot(word_counts, n_lists=None, ylim=(0, 90), palette_name='Set2', save=False, filename='bar_plot.png', title=' ', alpha=0.8):
+    if n_lists is None:
+        n_lists = len(word_counts)/10
+    words, counts = zip(*word_counts)
+    num_words = len(words)
+    
+    # Create an array of colors
+    colors = plt.get_cmap(palette_name)(np.linspace(0.6, 0.8, num_words))
+    
+    # Set the bar width to have more space between bars
+    bar_width = 0.5
+    
+    # Create the bar plot
+    fig, ax = plt.subplots()
+    bars = ax.bar(words, [(x/n_lists)*100 for x in counts], width=bar_width, color=colors, alpha=alpha)
+    
+    # Add angle to the bar labels
+    for label in ax.get_xticklabels():
+        label.set_rotation(45)
+    
+    # Set plot labels and title
+    ax.set_xlabel('Words')
+    ax.set_ylabel('Percentage (%)')
+    ax.set_title('Top 10 Most Common Words - {}'.format(title))
+    ax.set_ylim(ylim)
+    # Adjust the bottom margin to prevent cropping of labels when saving
+    plt.subplots_adjust(bottom=0.25)
+    
+    if save:
+        plt.savefig(filename, dpi=300)
+    else :
+        plt.show()
