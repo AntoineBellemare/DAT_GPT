@@ -28,34 +28,18 @@ strategies = {
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer, StoppingCriteria, StoppingCriteriaList
 
-tokenizer = AutoTokenizer.from_pretrained("StabilityAI/stablelm-tuned-alpha-7b", cache_dir="models/")
-model = AutoModelForCausalLM.from_pretrained("StabilityAI/stablelm-tuned-alpha-7b", cache_dir="models/")
+tokenizer = AutoTokenizer.from_pretrained("OpenAssistant/stablelm-7b-sft-v7-epoch-3", cache_dir="models/")
+model = AutoModelForCausalLM.from_pretrained("OpenAssistant/stablelm-7b-sft-v7-epoch-3", cache_dir="models/")
 model.half().cuda()
 
-class StopOnTokens(StoppingCriteria):
-    def __call__(self, input_ids: torch.LongTensor, scores: torch.FloatTensor, **kwargs) -> bool:
-        stop_ids = [50278, 50279, 50277, 1, 0]
-        for stop_id in stop_ids:
-            if input_ids[0][-1] == stop_id:
-                return True
-        return False
-
-system_prompt = """<|SYSTEM|># StableLM Tuned (Alpha version)
-- StableLM is a helpful and harmless open-source AI language model developed by StabilityAI.
-- StableLM is excited to be able to help the user, but will refuse to do anything that could be considered harmful to the user.
-- StableLM is more than just an information source, StableLM is also able to write poetry, short stories, and make jokes.
-- StableLM will refuse to participate in anything that could harm a human.
-"""
-
 def generate_response(dat_prompt, temp):
-    prompt = f"{system_prompt}<|USER|{dat_prompt}<|ASSISTANT|>"
+    prompt = f"<|prompter|>{dat_prompt}<|endoftext|><|assistant|>"
     inputs = tokenizer(prompt, return_tensors="pt").to("cuda")
     tokens = model.generate(
       **inputs,
       max_new_tokens=100,
       temperature=temp,
       do_sample=True,
-      stopping_criteria=StoppingCriteriaList([StopOnTokens()])
     )
     return tokenizer.decode(tokens[0], skip_special_tokens=True)
 
