@@ -48,7 +48,7 @@ system_prompt = """<|SYSTEM|># StableLM Tuned (Alpha version)
 """
 
 def generate_response(dat_prompt, temp):
-    prompt = f"{system_prompt}<|USER|{dat_prompt}<|ASSISTANT|>"
+    prompt = f"{system_prompt}<|USER|>{dat_prompt}<|ASSISTANT|>"
     inputs = tokenizer(prompt, return_tensors="pt").to("cuda")
     tokens = model.generate(
       **inputs,
