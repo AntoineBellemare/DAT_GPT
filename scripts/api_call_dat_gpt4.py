@@ -25,11 +25,11 @@ strategies = {"nothing":NOTHING,
               "opposites":STRATEGY_OPP,
               "thesaurus":STRATEGY_THE}
 # keys
-openai.api_key = 
-openai.organization = 
+openai.organization = "org-mQ56VzDhHkSj8tfM9HJ9DXVq"
+openai.api_key = "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"
 
 def generate_response(text, temp):
-    response = openai.ChatCompletion.create(model='gpt-3.5-turbo', messages=[{"role":'assistant', "content":text}], temperature=temp)
+    response = openai.ChatCompletion.create(model='gpt-4-0314', messages=[{"role":'assistant', "content":text}], temperature=temp)
     return response['choices'][0]["message"]["content"].strip()
 
 @click.command()
@@ -51,7 +51,7 @@ def main(filename, file_path="./", strategy='none',temp=None, iter_nb='0'):
     """
     logger = logging.getLogger(__name__)
     output = {}
-    for iterat in range(0, 500):
+    for iterat in range(0, 200):
         logger.info(f"API CALL NUMBER {iterat} \n{'~'*80}")
         try:
             response = generate_response(strategies[strategy], temp)
@@ -63,7 +63,7 @@ def main(filename, file_path="./", strategy='none',temp=None, iter_nb='0'):
             logger.info(f"API CALL NUMBER {iterat} FAILED; waiting 1h\n{'~'*80}")
             time.sleep(3600)
             continue
-        time.sleep(1)
+        time.sleep(3)
     logger.info(f"done \n {'-'*80}")
 
 if __name__ == "__main__":

@@ -1,4 +1,4 @@
-API_TOKEN = ""
+API_TOKEN = "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"
 import requests
 import time
 import json
@@ -25,11 +25,11 @@ strategies = {
     "opposites": STRATEGY_OPP,
     "thesaurus": STRATEGY_THE,
 }
-API_URL = "https://api-inference.huggingface.co/models/stabilityai/stablelm-tuned-alpha-7b/"
-headers = {"Authorization": "Bearer {API_TOKEN}"}
+API_URL = "https://api-inference.huggingface.co/models/TheBloke/stable-vicuna-13B-HF/"
+headers = {"Authorization": "Bearer " + API_TOKEN}
 
 def generate_response(payload):
-    response = requests.post(API_URL, headers=headers, json=payload)
+    response = requests.post(API_URL, headers=headers, timeout=320, json=payload)
     return response.json()
 # f"<|prompter|>{strategies['nothing']}<|endoftext|><|assistant|>"
 
@@ -49,16 +49,17 @@ def main(filename, file_path="./", strategy="none", temp=None, iter_nb="0"):
         path to save the file, change if you dont want to install from where you call the script
     strategy:
         choose from ['none','thesaurus','random','etymology', 'opposites']
-    
+    temp: float, optional
+        temperature of the model, default is 0.7
     """
     logger = logging.getLogger(__name__)
     output = {}
     for iterat in range(0, 500):
-        logger.info(f"API CALL NUMBER {iterat} \n {'~'*80}")
+        logger.info(f"API CALL NUMBER {iterat} \n{'~'*80}")
         try:
             response = generate_response(
                 {
-                "inputs": f"<|prompter|>{strategies[strategy]}<|endoftext|><|assistant|>",
+                "inputs": f"### Human : {strategies[strategy]} \n### Assistant:",
 		        "parameters": {'max_new_tokens': 250,
                                'temperature': temp},
 		        "options":{'wait_for_model':True,

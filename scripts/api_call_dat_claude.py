@@ -7,7 +7,7 @@ import warnings
 warnings.filterwarnings('ignore')
 
 import anthropic
-NOTHING="Make a list of these 10 words"
+NOTHING="Make a list of 10 words"
 YOUNG_NO="Please enter 10 words that are as different from each other as possible, in all meanings and uses of the words. Answer from the perspective of a child. Rules: Only single words in English. Only nouns (e.g., things, objects, concepts). No proper nouns (e.g., no specific people or places). No specialised vocabulary (e.g., no technical terms). Think of the words on your own (e.g., do not just look at objects in your surroundings).  Make a list of these 10 words, a single word in each entry of the list."
 NO_STRATEGY="Please enter 10 words that are as different from each other as possible, in all meanings and uses of the words. Rules: Only single words in English. Only nouns (e.g., things, objects, concepts). No proper nouns (e.g., no specific people or places). No specialised vocabulary (e.g., no technical terms). Think of the words on your own (e.g., do not just look at objects in your surroundings).  Make a list of these 10 words, a single word in each entry of the list."
 
@@ -26,10 +26,12 @@ strategies = {"nothing":NOTHING,
               "opposites":STRATEGY_OPP,
               "thesaurus":STRATEGY_THE}
 # keys
-anthropic.api_key = "" # add your key here
+anthropic.api_key = "sk-ant-C9z6Ea1-M-ITXRetrDmc4cYHJVh6PrEnlwvjdKmtFuU7L1-5sfk021GAHOYwxG_l2VOR-AXazlnRH9PXo1ngSQ" # add your key here
 
 def generate_response(text, temp):
     client = anthropic.Client(anthropic.api_key)
+    if temp is None:
+        temp = 0.7
     response = client.completion(prompt=f"{anthropic.HUMAN_PROMPT} {text} {anthropic.AI_PROMPT}",
                                  model="claude-v1", stop_sequences = [anthropic.HUMAN_PROMPT],
                                  temperature=temp, max_tokens_to_sample=100,)
@@ -50,8 +52,8 @@ def main(filename, file_path="./", strategy='none',temp=None, iter_nb='0'):
     """
     logger = logging.getLogger(__name__)
     output = {}
-    for iterat in range(0, 5):
-        logger.info(f"API CALL NUMBER {iterat}  {'~'*80}")
+    for iterat in range(0, 800):
+        logger.info(f"API CALL NUMBER {iterat} \n {'~'*80}")
         try:
             response = generate_response(strategies[strategy], temp)
             logger.info(f"Response:   {response}")
@@ -59,7 +61,8 @@ def main(filename, file_path="./", strategy='none',temp=None, iter_nb='0'):
             with open(f"{file_path}{filename}_temp{temp}_{strategy}{iter_nb}.json", "w") as outfile:
                 json.dump(output, outfile)
         except:
-            logger.info(f"API CALL NUMBER {iterat} FAILED; waiting 1h {'~'*80}")
+            logger.info(f"API CALL NUMBER {iterat} FAILED; waiting 1h {'~'*80}"
+                        f"Response:   {generate_response(strategies[strategy], temp)}")
             time.sleep(3600)
             continue
         time.sleep(1)
