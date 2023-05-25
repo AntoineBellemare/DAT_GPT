@@ -27,11 +27,22 @@ def embed(text_json, model="text-embedding-ada-002", chunk_size=500):
     return embeddings
 
 
-fname = "GPT3_temp1.0_flash_fiction_nocrea100.json"
+# flash fiction
+# fname = "GPT3_temp1.0_flash_fiction_nocrea100.json"
 # fname = "GPT4_temp1.0_flash_fiction_nocrea100.json"
+# fname = "GPT4_temp1.2_flash_fiction_nocrea.json"
+
+# haiku
 # fname = "GPT3_temp1.0_haiku_nocrea100.json"
 # fname = "GPT4_temp1.0_haiku_nocrea100.json"
+# fname = "GPT4_temp1.5_haiku_nocrea.json"
 # fname = "human_haiku_tempslibres.json"
+
+# synopsis
+# fname = "GPT3_temp1.0_synopsis_nocrea100.json"
+# fname = "GPT3_temp1.2_synopsis_nocrea.json"
+# fname = "GPT4_temp1.0_synopsis_nocrea100.json"
+# fname = "GPT4_temp1.2_synopsis_nocrea.json"
 
 text_json = json.load(open(f"machine_data_stories/{fname}", "r"))
 vecs = embed(text_json)
