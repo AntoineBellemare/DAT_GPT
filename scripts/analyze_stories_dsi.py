@@ -186,7 +186,20 @@ def plot_cluster_plot(embeddings_2d, cluster_labels, dsi, sentences, output_path
 
 def process_files(filenames):
     """
-    Process files and return a dictionary of story IDs and their DSI scores
+    Process files and return a dictionary of story IDs and their DSI scores.
+
+    DSI scores are calculated using the following steps:
+    1. Tokenize sentences using NLTK's PunktSentenceTokenizer
+    2. Extract BERT features for each sentence
+    3. Calculate DSI score of story based on the cosine similarity between sucessive words embeddings
+    4. Apply clustering to the sentence embeddings
+    5. Plot the cluster plot
+    6. Save the data to a csv file
+
+    Parameters
+    ----------
+    filenames : list
+        List of filenames to process
     """
     model = initialize_model()
     tokenizer = initialize_tokenizer()
