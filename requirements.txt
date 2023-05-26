@@ -8,3 +8,7 @@ seaborn
 scipy
 dat
 anthropic
+torch
+transformers
+scikit-learn
+matplotlib
