@@ -32,7 +32,7 @@ llm = Llama(model_path="models/gpt4-x-vicuna-13B-GGML/gpt4-x-vicuna-13B.ggml.q8_
 
 def generate_response(dat_prompt, temp):
     prompt = f"### Instruction: {dat_prompt}\n### Response: "
-    output = llm(prompt, max_tokens=100, temperature=temp)
+    output = llm(prompt, max_tokens=250, temperature=temp)
     llm.reset()
     return output["choices"][0]["text"].strip()
 
