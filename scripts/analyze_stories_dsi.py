@@ -253,7 +253,7 @@ def process_files(filenames):
             s[ID]["temp"] = temp
 
             embeddings_2d, cluster_labels = apply_clustering(features, sentences)
-            output_path = f"./figs/{condition}/{model_name}_sample{str(ID)}_clusters.png"
+            output_path = f"./figures/{condition}/{model_name}_sample{str(ID)}_clusters.png"
             plot_cluster_plot(embeddings_2d, cluster_labels, mean_story_dcos, sentences, output_path)
 
     dsi_df = pd.DataFrame.from_dict(s, orient="index")
