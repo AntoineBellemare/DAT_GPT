@@ -76,10 +76,8 @@ def main(filename, file_path="./", strategy='none',temp=None, iter_nb='0'):
             with open(f"{file_path}{filename}_temp{temp}_{strategy}{iter_nb}.json", "w") as outfile:
                 json.dump(output, outfile)
         except:
-            logger.info(f"API CALL NUMBER {iterat} FAILED; waiting 1h\n{'~'*80}")
-            time.sleep(60)
+            logger.info(f"API CALL NUMBER {iterat} FAILED\n{'~'*80}")
             continue
-        time.sleep(3)
     logger.info(f"done \n {'-'*80}")
 
 if __name__ == "__main__":
