@@ -44,6 +44,8 @@ def generate_response(text, temp):
     output = llm(prompt, temperature=temp, stop=["### Instruction:", "### Response:"])
     llm.reset()
     response = output["choices"][0]["text"].strip()
+    if len(response) <= 1:
+        raise Exception("Empty response")
     return response
 
 @click.command()
