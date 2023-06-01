@@ -1,4 +1,6 @@
 import json
+import glob
+import fnmatch
 import pandas as pd
 import time
 import numpy as np
@@ -29,6 +31,7 @@ def initialize_tokenizer():
 
 def load_data(filename):
     # load data
+    filename = glob.glob(filename)[0]
     with open(filename, 'r') as f:
         data = json.load(f)
     return data
@@ -205,32 +208,52 @@ def process_files(filenames):
     tokenizer = initialize_tokenizer()
     segmenter = PunktSentenceTokenizer()
     s = {}
-
+    counter = 0
     for filename in filenames:
         print(f"Processing file: {filename}")
-        # get model name, creative writing condition, and temperature
+        # get info from filename
+        # get model name,
         if 'GPT4' in filename:
             model_name = 'GPT4'
         elif 'GPT3' in filename:
             model_name = 'GPT3'
         elif 'Vicuna' in filename:
             model_name = 'Vicuna'
+        elif 'human' in filename:
+            model_name = 'human'
+        # get creative writing condition
         if 'synopsis' in filename:
             condition = 'synopsis'
         elif 'flash' in filename:
             condition = 'flash-fiction'
         elif 'haiku' in filename:
             condition = 'haiku'
+        elif 'poem' in filename:
+            condition = 'poem'
+        # get temperature
         if 'temp1.0' in filename:
             temp = 'Mid'
         elif 'temp1.2' in filename:
             temp = 'High'
+        elif 'temp0.8' in filename:
+            temp = 'Low'
+        elif 'temp0.6' in filename:
+            temp = 'Very Low'
+        elif 'temp1.5' in filename or 'temp1.4' in filename:
+            temp = 'Very High'
+        else:
+            temp = 'n.a.'
         
-        # load data       
-        data = load_data(filename)
+        # load data
+        try:
+            data = load_data(filename)
+        except IndexError:
+            print(f"Error loading data; no {filename}")
+            continue
 
         for index in data.keys():
-            ID = index
+            last_time = time.time()
+            ID = counter
             text = data[index]
             s[ID] = {}
             print(f"Processing story for story {str(ID)}\n"
@@ -253,28 +276,44 @@ def process_files(filenames):
             s[ID]["temp"] = temp
 
             embeddings_2d, cluster_labels = apply_clustering(features, sentences)
-            output_path = f"./figures/{condition}/{model_name}_sample{str(ID)}_clusters.png"
+            output_path = f"./figures/{condition}/{model_name}_sample{str(ID)}_temp-{temp}_clusters.png"
             plot_cluster_plot(embeddings_2d, cluster_labels, mean_story_dcos, sentences, output_path)
+            counter += 1
+            elapsed_time = time.time() - last_time
+            print('Elapsed time for story: ' + str(elapsed_time))
+            elapsed_time = time.time() - start_time
+            print('Elapsed time since beginning: ' + str(elapsed_time))
 
-    dsi_df = pd.DataFrame.from_dict(s, orient="index")
-    dsi_df.to_csv('machine_DSI_output.csv', index=False)
-    elapsed_time = time.time() - start_time
-    print('Elapsed time: ' + str(elapsed_time))
+
+        dsi_df = pd.DataFrame.from_dict(s, orient="index")
+        dsi_df.to_csv('machine_and_human_DSI_output.csv', index=False)
+        elapsed_time = time.time() - start_time
+        print('Elapsed time: ' + str(elapsed_time))
 
 
 # USER EDIT
-filenames = ["./machine_data_stories/GPT4_temp1.0_synopsis_nocrea100.json", 
-             "./machine_data_stories/GPT4_temp1.0_flash_fiction_nocrea100.json",
-             "./machine_data_stories/GPT4_temp1.0_haiku_nocrea100.json",
-             "./machine_data_stories/GPT3_temp1.0_synopsis_nocrea100.json",
-             "./machine_data_stories/GPT3_temp1.0_flash_fiction_nocrea100.json",
-             "./machine_data_stories/GPT3_temp1.0_haiku_nocrea100.json",
-             "./machine_data_stories/GPT4_temp1.2_synopsis_nocrea100.json",
-             "./machine_data_stories/GPT4_temp1.2_flash_fiction_nocrea100.json",
-             "./machine_data_stories/GPT4_temp1.2_haiku_nocrea100.json",
-             "./machine_data_stories/GPT3_temp1.2_synopsis_nocrea100.json",
-             "./machine_data_stories/GPT3_temp1.2_flash_fiction_nocrea100.json",
-             "./machine_data_stories/GPT3_temp1.2_haiku_nocrea100.json",]
+filenames = ["./machine_data_stories/GPT4_temp0.6_haiku_nocrea*.json",
+             "./machine_data_stories/GPT4_temp0.6_synopsis_nocrea*.json",
+             "./machine_data_stories/GPT4_temp0.8_flash_fiction_nocrea*.json",
+             "./machine_data_stories/GPT4_temp0.8_haiku_nocrea*.json",
+             "./machine_data_stories/GPT4_temp0.8_synopsis_nocrea*.json",
+             "./machine_data_stories/GPT4_temp1.0_synopsis_nocrea*.json",
+             "./machine_data_stories/GPT4_temp1.0_flash_fiction_nocrea*.json",
+             "./machine_data_stories/GPT4_temp1.0_haiku_nocrea*.json",
+             "./machine_data_stories/GPT4_temp1.2_synopsis_nocrea*.json",
+             "./machine_data_stories/GPT4_temp1.2_flash_fiction_nocrea*.json",
+             "./machine_data_stories/GPT4_temp1.2_haiku_nocrea*.json",
+             "./machine_data_stories/GPT4_temp1.4_haiku_nocrea*.json",
+            "./machine_data_stories/GPT4_temp1.4_synopsis_nocrea*.json",
+             "./machine_data_stories/GPT3_temp1.0_synopsis_nocrea*.json",
+             "./machine_data_stories/GPT3_temp1.0_flash_fiction_nocrea*.json",
+             "./machine_data_stories/GPT3_temp1.0_haiku_nocrea*.json",
+             "./machine_data_stories/GPT3_temp1.2_synopsis_nocrea*.json",
+             "./machine_data_stories/GPT3_temp1.2_flash_fiction_nocrea*.json",
+             "./machine_data_stories/GPT3_temp1.5_haiku_nocrea*.json",
+             "./machine_data_stories/GPT3_temp1.0_poem_nocrea*.json",
+             "./machine_data_stories/human_haiku_tempslibres.json",]
+# filenames = glob.glob("./machine_data_stories/*nocrea*.json")
 
 start_time = time.time()
-process_files(filenames)
+process_files(fnmatch.filter(filenames, "*haiku*"))
