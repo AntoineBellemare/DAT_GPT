@@ -1,10 +1,13 @@
+import glob
 import json
+import os
 import pickle
+from os import path
 
 import numpy as np
 import openai
 import pandas as pd
-from tqdm import trange
+from tqdm import tqdm
 
 # Set the openai.api_key globally
 openai.api_key = "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"
@@ -12,7 +15,7 @@ openai.api_key = "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"
 
 def embed(text_json, model="text-embedding-ada-002", chunk_size=500):
     responses = []
-    for i in trange(0, len(text_json), chunk_size, desc=f"Embedding chunks"):
+    for i in range(0, len(text_json), chunk_size):
         responses.append(
             openai.Embedding.create(
                 model=model,
@@ -27,29 +30,26 @@ def embed(text_json, model="text-embedding-ada-002", chunk_size=500):
     return embeddings
 
 
-# flash fiction
-# fname = "GPT3_temp1.0_flash_fiction_nocrea100.json"
-# fname = "GPT3_temp1.2_flash_fiction_nocrea.json"
-# fname = "GPT4_temp0.8_flash_fiction_nocrea110.json"
-# fname = "GPT4_temp1.0_flash_fiction_nocrea100.json"
-# fname = "GPT4_temp1.2_flash_fiction_nocrea.json"
+def embed_all_stories(basedir="machine_data_stories/"):
+    if not path.exists(path.join(basedir, "embeddings")):
+        os.mkdir(path.join(basedir, "embeddings"))
 
-# haiku
-# fname = "GPT3_temp1.0_haiku_nocrea100.json"
-# fname = "GPT3_temp1.5_haiku_nocrea.json"
-# fname = "GPT4_temp0.8_haiku_nocrea110.json"
-# fname = "GPT4_temp1.0_haiku_nocrea100.json"
-# fname = "GPT4_temp1.2_haiku_nocrea130.json"
-# fname = "GPT4_temp1.4_haiku_nocrea110.json"
-# fname = "GPT4_temp1.5_haiku_nocrea.json"
-# fname = "human_haiku_tempslibres.json"
+    fnames = glob.glob(f"{basedir}/*.json")
 
-# synopsis
-# fname = "GPT3_temp1.0_synopsis_nocrea100.json"
-# fname = "GPT3_temp1.2_synopsis_nocrea.json"
-# fname = "GPT4_temp1.0_synopsis_nocrea100.json"
-# fname = "GPT4_temp1.2_synopsis_nocrea.json"
+    pbar = tqdm(fnames, desc="Embedding stories")
+    for fname in pbar:
+        pbar.set_postfix_str(path.basename(fname))
+        fname_vec = f"{basedir}/embeddings/{path.basename(fname)[:-5]}_vecs.json"
+        fname_vec = path.normpath(fname_vec)
 
-text_json = json.load(open(f"machine_data_stories/{fname}", "r"))
-vecs = embed(text_json)
-json.dump(vecs, open(f"machine_data_stories/embeddings/{fname[:-5]}_vecs.json", "w"))
+        if path.exists(fname_vec):
+            continue
+
+        with open(fname, "r") as f:
+            text_json = json.load(f)
+        vecs = embed(text_json)
+        with open(fname_vec, "w") as f:
+            json.dump(vecs, f)
+
+
+embed_all_stories()

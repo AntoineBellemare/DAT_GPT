@@ -41,9 +41,11 @@ llm = Llama(model_path="models/gpt4-x-vicuna-13B-GGML/gpt4-x-vicuna-13B.ggml.q8_
 
 def generate_response(text, temp):
     prompt = f"### Instruction: {text}\n### Response: "
-    output = llm(prompt, max_tokens=1000, temperature=temp, stop=["###"])
+    output = llm(prompt, temperature=temp, stop=["### Instruction:", "### Response:"])
     llm.reset()
     response = output["choices"][0]["text"].strip()
+    if len(response) <= 1:
+        raise Exception("Empty response")
     return response
 
 @click.command()
@@ -65,7 +67,7 @@ def main(filename, file_path="./", strategy='none',temp=None, iter_nb='0'):
     """
     logger = logging.getLogger(__name__)
     output = {}
-    for iterat in range(0, int(iter_nb)):
+    for iterat in range(0, 100):
         logger.info(f"API CALL NUMBER {iterat} \n{'~'*80}")
         try:
             response = generate_response(strategies[strategy], temp)
@@ -74,10 +76,8 @@ def main(filename, file_path="./", strategy='none',temp=None, iter_nb='0'):
             with open(f"{file_path}{filename}_temp{temp}_{strategy}{iter_nb}.json", "w") as outfile:
                 json.dump(output, outfile)
         except:
-            logger.info(f"API CALL NUMBER {iterat} FAILED; waiting 1h\n{'~'*80}")
-            time.sleep(60)
+            logger.info(f"API CALL NUMBER {iterat} FAILED\n{'~'*80}")
             continue
-        time.sleep(3)
     logger.info(f"done \n {'-'*80}")
 
 if __name__ == "__main__":
