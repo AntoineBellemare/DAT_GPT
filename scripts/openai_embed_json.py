@@ -14,14 +14,13 @@ openai.api_key = "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"
 
 
 def embed(text_json, model="text-embedding-ada-002", chunk_size=500):
+    if isinstance(text_json, list):
+        text_json = {str(i): text for i, text in enumerate(text_json)}
+
     responses = []
     for i in range(0, len(text_json), chunk_size):
-        responses.append(
-            openai.Embedding.create(
-                model=model,
-                input=list(text_json.values())[i : i + chunk_size],
-            )
-        )
+        chunk = list(text_json.values())[i : i + chunk_size]
+        responses.append(openai.Embedding.create(model=model, input=chunk))
 
     response = []
     for r in responses:
