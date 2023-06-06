@@ -4,6 +4,7 @@ import fnmatch
 import pandas as pd
 import time
 import numpy as np
+from antropy import lziv_complexity
 import torch
 from transformers import BertModel, BertTokenizer
 from nltk.tokenize import PunktSentenceTokenizer
@@ -14,6 +15,7 @@ import matplotlib.pyplot as plt
 import matplotlib
 matplotlib.use('Agg')
 import warnings
+warnings.filterwarnings("ignore", category=DeprecationWarning, module="numba")
 warnings.filterwarnings("ignore")
 
 cos = torch.nn.CosineSimilarity(dim = 0)
@@ -31,9 +33,11 @@ def initialize_tokenizer():
 
 def load_data(filename):
     # load data
-    filename = glob.glob(filename)[0]
-    with open(filename, 'r') as f:
-        data = json.load(f)
+    if "TMDB" in filename:
+        data = pd.read_json(filename)
+    else:
+        with open(filename) as json_file:
+            data = json.load(json_file)
     return data
 
 def train_segmenter(segmenter, text):
@@ -86,6 +90,17 @@ def get_sentence_features(sentences, tokenizer, model):
             features.append(layer7[0, j, :])
 
     return features, words
+def calculate_lziv(text):
+    """
+    Calculate the LZIV complexity of a story.
+
+    Parameters
+    ----------
+    text : str
+        Story text. Raw text or tokenized text.
+    """
+    lziv = lziv_complexity(text, normalize=True)
+    return lziv
 
 def calculate_dcos(features, words):
     """
@@ -108,6 +123,9 @@ def calculate_dcos(features, words):
     https://osf.io/ath2s/
     """
     num_words = len(words)
+    sentence_embeddings = [feature.numpy() for feature in features]
+    
+    # calculate DSI
     lower_triangle_indices = np.tril_indices_from(np.random.rand(num_words, num_words), k=-1)
     story_dcos_vals = []
     for k in range(len(lower_triangle_indices[0])):
@@ -116,7 +134,7 @@ def calculate_dcos(features, words):
         dcos = (1 - cos(features1, features2))
         story_dcos_vals.append(dcos)
     mean_story_dcos = torch.mean(torch.stack(story_dcos_vals)).item()
-    return mean_story_dcos
+    return mean_story_dcos, num_words
 
 def apply_clustering(features, sentences):
     """
@@ -219,6 +237,8 @@ def process_files(filenames):
             model_name = 'GPT3'
         elif 'Vicuna' in filename:
             model_name = 'Vicuna'
+        elif 'TMDB' in filename:
+            model_name = 'IMDB'
         elif 'human' in filename:
             model_name = 'human'
         # get creative writing condition
@@ -230,13 +250,18 @@ def process_files(filenames):
             condition = 'haiku'
         elif 'poem' in filename:
             condition = 'poem'
+        else:
+            condition = 'synopsis'
         # get temperature
         if 'temp1.0' in filename:
             temp = 'Mid'
         elif 'temp1.2' in filename:
             temp = 'High'
         elif 'temp0.8' in filename:
-            temp = 'Low'
+            if model_name == 'Vicuna':
+                temp = 'Mid'
+            else:
+                temp = 'Low'
         elif 'temp0.6' in filename:
             temp = 'Very Low'
         elif 'temp1.5' in filename or 'temp1.4' in filename:
@@ -250,11 +275,20 @@ def process_files(filenames):
         except IndexError:
             print(f"Error loading data; no {filename}")
             continue
-
-        for index in data.keys():
+        if model_name == 'IMDB':
+            iterator = range(0, len(data)-1)
+        else:
+            print(model_name)
+            iterator = data.keys()
+        for index in iterator:
             last_time = time.time()
             ID = counter
-            text = data[index]
+            try:
+                text = data[index]
+            except KeyError:
+                text = data.iloc[index]["overview"]
+            if text == "":
+                continue
             s[ID] = {}
             print(f"Processing story for story {str(ID)}\n"
                   f"Story: {text}")
@@ -262,22 +296,27 @@ def process_files(filenames):
             # get sentence features
             train_segmenter(segmenter, text)
             sentences = segment_text(segmenter, text)
+            lziv = calculate_lziv(text)
             features, words = get_sentence_features(sentences, tokenizer, model)
             
             # calculate DSI
-            mean_story_dcos = calculate_dcos(features, words)
+            mean_story_dcos, num_words = calculate_dcos(features, words)
             s[ID]["DSI"] = mean_story_dcos
             print(f"DSI for participant {str(ID)}: {mean_story_dcos}")
+            print(f"Number of words: {num_words}")
+            print(f"Lempel-Ziv: {lziv}")
             
             # log data
             s[ID]["story"] = text
             s[ID]["model"] = model_name
             s[ID]["condition"] = condition
             s[ID]["temp"] = temp
+            s[ID]["num_words"] = num_words
+            s[ID]["lziv"] = lziv
 
-            embeddings_2d, cluster_labels = apply_clustering(features, sentences)
-            output_path = f"./figures/{condition}/{model_name}_sample{str(ID)}_temp-{temp}_clusters.png"
-            plot_cluster_plot(embeddings_2d, cluster_labels, mean_story_dcos, sentences, output_path)
+            #embeddings_2d, cluster_labels = apply_clustering(features, sentences)
+            #output_path = f"./figures/{condition}/{model_name}_sample{str(ID)}_temp-{temp}_clusters.png"
+            #plot_cluster_plot(embeddings_2d, cluster_labels, mean_story_dcos, sentences, output_path)
             counter += 1
             elapsed_time = time.time() - last_time
             print('Elapsed time for story: ' + str(elapsed_time))
@@ -285,35 +324,16 @@ def process_files(filenames):
             print('Elapsed time since beginning: ' + str(elapsed_time))
 
 
-        dsi_df = pd.DataFrame.from_dict(s, orient="index")
-        dsi_df.to_csv('machine_and_human_DSI_output.csv', index=False)
+            dsi_df = pd.DataFrame.from_dict(s, orient="index")
+            dsi_df.to_csv('machine_DSI-lziv_output.csv', index=False)
         elapsed_time = time.time() - start_time
         print('Elapsed time: ' + str(elapsed_time))
 
 
 # USER EDIT
-filenames = ["./machine_data_stories/GPT4_temp0.6_haiku_nocrea*.json",
-             "./machine_data_stories/GPT4_temp0.6_synopsis_nocrea*.json",
-             "./machine_data_stories/GPT4_temp0.8_flash_fiction_nocrea*.json",
-             "./machine_data_stories/GPT4_temp0.8_haiku_nocrea*.json",
-             "./machine_data_stories/GPT4_temp0.8_synopsis_nocrea*.json",
-             "./machine_data_stories/GPT4_temp1.0_synopsis_nocrea*.json",
-             "./machine_data_stories/GPT4_temp1.0_flash_fiction_nocrea*.json",
-             "./machine_data_stories/GPT4_temp1.0_haiku_nocrea*.json",
-             "./machine_data_stories/GPT4_temp1.2_synopsis_nocrea*.json",
-             "./machine_data_stories/GPT4_temp1.2_flash_fiction_nocrea*.json",
-             "./machine_data_stories/GPT4_temp1.2_haiku_nocrea*.json",
-             "./machine_data_stories/GPT4_temp1.4_haiku_nocrea*.json",
-            "./machine_data_stories/GPT4_temp1.4_synopsis_nocrea*.json",
-             "./machine_data_stories/GPT3_temp1.0_synopsis_nocrea*.json",
-             "./machine_data_stories/GPT3_temp1.0_flash_fiction_nocrea*.json",
-             "./machine_data_stories/GPT3_temp1.0_haiku_nocrea*.json",
-             "./machine_data_stories/GPT3_temp1.2_synopsis_nocrea*.json",
-             "./machine_data_stories/GPT3_temp1.2_flash_fiction_nocrea*.json",
-             "./machine_data_stories/GPT3_temp1.5_haiku_nocrea*.json",
-             "./machine_data_stories/GPT3_temp1.0_poem_nocrea*.json",
-             "./machine_data_stories/human_haiku_tempslibres.json",]
-# filenames = glob.glob("./machine_data_stories/*nocrea*.json")
+filenames = glob.glob("./machine_data_stories/*nocrea*.json")
+#filenames = glob.glob("./human_data_synopsis/TMDB_movies_subset.json")
+print(f"Number of files to process: {len(filenames)}")
 
 start_time = time.time()
-process_files(fnmatch.filter(filenames, "*haiku*"))
+process_files(filenames)
