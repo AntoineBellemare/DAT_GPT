@@ -68,7 +68,7 @@ def main(filename, file_path="./", strategy='none',temp=None, iter_nb='0'):
     """
     logger = logging.getLogger(__name__)
     output = {}
-    for iterat in range(0, 100):
+    for iterat in range(0, 300):
         logger.info(f"API CALL NUMBER {iterat} \n{'~'*80}")
         try:
             response = generate_response(strategies[strategy], temp)
