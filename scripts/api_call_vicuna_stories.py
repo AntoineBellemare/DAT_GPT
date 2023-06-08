@@ -35,13 +35,14 @@ strategies = {"synopsis":SYNOPSIS,
               "french_poetic_flash_fiction":FRENCH_POETIC_FLASH_FICTION}
 
 from llama_cpp import Llama
+import random
 
 # download the model file from https://huggingface.co/TheBloke/gpt4-x-vicuna-13B-GGML/resolve/main/gpt4-x-vicuna-13B.ggml.q8_0.bin before running this
-llm = Llama(model_path="models/gpt4-x-vicuna-13B-GGML/gpt4-x-vicuna-13B.ggml.q8_0.bin", use_mmap=False)
+llm = Llama(model_path="models/gpt4-x-vicuna-13B-GGML/gpt4-x-vicuna-13B.ggml.q8_0.bin", use_mmap=False, seed=random.randint(0, 1000000), n_ctx=8000)
 
 def generate_response(text, temp):
     prompt = f"### Instruction: {text}\n### Response: "
-    output = llm(prompt, temperature=temp, stop=["### Instruction:", "### Response:"])
+    output = llm(prompt, temperature=temp, stop=["### Instruction:", "### Response:"], max_tokens=6000)
     llm.reset()
     response = output["choices"][0]["text"].strip()
     if len(response) <= 1:

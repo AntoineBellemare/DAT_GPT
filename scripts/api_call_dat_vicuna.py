@@ -26,9 +26,10 @@ strategies = {
 }
 
 from llama_cpp import Llama
+import random
 
 # download the model file from https://huggingface.co/TheBloke/gpt4-x-vicuna-13B-GGML/resolve/main/gpt4-x-vicuna-13B.ggml.q8_0.bin before running this
-llm = Llama(model_path="models/gpt4-x-vicuna-13B-GGML/gpt4-x-vicuna-13B.ggml.q8_0.bin", use_mmap=False)
+llm = Llama(model_path="models/gpt4-x-vicuna-13B-GGML/gpt4-x-vicuna-13B.ggml.q8_0.bin", use_mmap=False, seed=random.randint(0, 1000000))
 
 def generate_response(dat_prompt, temp):
     prompt = f"### Instruction: {dat_prompt}\n### Response: "
