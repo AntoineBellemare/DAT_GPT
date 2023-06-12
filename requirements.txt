@@ -13,3 +13,4 @@ transformers
 scikit-learn
 matplotlib
 nltk
+einops
