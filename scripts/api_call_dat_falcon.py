@@ -25,24 +25,35 @@ strategies = {
     "thesaurus": STRATEGY_THE,
 }
 
+from transformers import AutoTokenizer, AutoModelForCausalLM
+import transformers
 import torch
-from transformers import AutoModelForCausalLM, AutoTokenizer, StoppingCriteria, StoppingCriteriaList
 
-tokenizer = AutoTokenizer.from_pretrained("tiiuae/falcon-40b-instruct", cache_dir="models/")
-model = AutoModelForCausalLM.from_pretrained("tiiuae/falcon-40b-instruct", cache_dir="models/", torch_dtype=torch.bfloat16, trust_remote_code=True)
-model.cuda()
+model_name = "tiiuae/falcon-40b-instruct"
+
+tokenizer = AutoTokenizer.from_pretrained(model_name, cache_dir="models/")
+model = AutoModelForCausalLM.from_pretrained(model_name, cache_dir="models/", torch_dtype=torch.bfloat16, trust_remote_code=True, device_map="auto")
+
+pipeline = transformers.pipeline(
+    "text-generation",
+    model=model,
+    tokenizer=tokenizer,
+    torch_dtype=torch.bfloat16,
+    trust_remote_code=True,
+    device_map="auto",
+)
 
 def generate_response(dat_prompt, temp):
-    prompt = f">>QUESTION<<{dat_prompt}\n>>ANSWER<<"
-    inputs = tokenizer(prompt, return_tensors="pt").to("cuda")
-    tokens = model.generate(
-      **inputs,
-      max_new_tokens=100,
-      temperature=temp,
-      return_dict_in_generate=True,
-      do_sample=True,
+    prompt = f">>QUESTION<<{dat_prompt}>>ANSWER<<"
+    sequences = pipeline(
+        prompt,
+        max_length=100,
+        do_sample=True,
+        temperature=temp,
+        eos_token_id=tokenizer.eos_token_id,
+        pad_token_id=tokenizer.eos_token_id,
     )
-    return tokenizer.decode(tokens.sequences[0, inputs.input_ids.shape[1]:])
+    return sequences[0]["generated_text"].split(">>ANSWER<<")[1].split(">>QUESTION<<")[0]
 
 
 @click.command()
