@@ -279,7 +279,7 @@ def process_files(filenames):
         except IndexError:
             print(f"Error loading data; no {filename}")
             continue
-        if model_name == 'IMDB' or 'human_haiku' in filename:
+        if model_name == 'IMDB' or 'haikus' in filename:
             iterator = range(0, len(data)-1)
         else:
             print(model_name)
