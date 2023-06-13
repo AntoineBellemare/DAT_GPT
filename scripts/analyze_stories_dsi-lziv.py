@@ -237,26 +237,26 @@ def process_files(filenames):
             model_name = 'GPT3'
         elif 'Vicuna' in filename:
             model_name = 'Vicuna'
-        elif 'TMDB' in filename:
-            model_name = 'IMDB'
         elif 'human' in filename:
             model_name = 'human'
         # get creative writing condition
-        if 'synopsis' in filename:
+        if 'synopses' in filename:
             condition = 'synopsis'
-        elif 'flash' in filename:
+        elif 'flash_fictions' in filename:
             condition = 'flash-fiction'
-        elif 'haiku' in filename:
+        elif 'haikus' in filename:
             condition = 'haiku'
-        elif 'poem' in filename:
-            condition = 'poem'
-        else:
-            condition = 'synopsis'
+        #else:
+        #    condition = 'synopsis'
         # get temperature
         if 'temp1.0' in filename:
             temp = 'Mid'
+        elif 'temp1.2' in filename and 'flash' in filename:
+            temp = 'Very High'
         elif 'temp1.2' in filename:
             temp = 'High'
+        elif 'temp0.8' in filename and 'flash' in filename:
+            temp = 'Very Low'
         elif 'temp0.8' in filename:
             if model_name == 'Vicuna':
                 temp = 'Mid'
@@ -266,6 +266,10 @@ def process_files(filenames):
             temp = 'Very Low'
         elif 'temp1.5' in filename or 'temp1.4' in filename:
             temp = 'Very High'
+        elif 'temp0.9' in filename:
+            temp = 'Low'
+        elif 'temp1.1' in filename:
+            temp = 'High'
         else:
             temp = 'n.a.'
         
