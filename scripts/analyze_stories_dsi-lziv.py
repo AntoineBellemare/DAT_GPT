@@ -237,7 +237,7 @@ def process_files(filenames):
             model_name = 'GPT3'
         elif 'Vicuna' in filename:
             model_name = 'Vicuna'
-        elif 'human' in filename:
+        elif 'human' in filename or "TMDB" in filename:
             model_name = 'human'
         # get creative writing condition
         if 'synopses' in filename:
@@ -246,17 +246,13 @@ def process_files(filenames):
             condition = 'flash-fiction'
         elif 'haikus' in filename:
             condition = 'haiku'
-        #else:
-        #    condition = 'synopsis'
+        else:
+            condition = 'synopsis'
         # get temperature
         if 'temp1.0' in filename:
             temp = 'Mid'
-        elif 'temp1.2' in filename and 'flash' in filename:
-            temp = 'Very High'
         elif 'temp1.2' in filename:
             temp = 'High'
-        elif 'temp0.8' in filename and 'flash' in filename:
-            temp = 'Very Low'
         elif 'temp0.8' in filename:
             if model_name == 'Vicuna':
                 temp = 'Mid'
@@ -267,9 +263,9 @@ def process_files(filenames):
         elif 'temp1.5' in filename or 'temp1.4' in filename:
             temp = 'Very High'
         elif 'temp0.9' in filename:
-            temp = 'Low'
+            temp = 'Mid-Low'
         elif 'temp1.1' in filename:
-            temp = 'High'
+            temp = 'Mid-High'
         else:
             temp = 'n.a.'
         
@@ -279,7 +275,7 @@ def process_files(filenames):
         except IndexError:
             print(f"Error loading data; no {filename}")
             continue
-        if model_name == 'IMDB' or 'haikus' in filename:
+        if model_name == 'human' or 'haikus' in filename:
             iterator = range(0, len(data)-1)
         else:
             print(model_name)
@@ -289,6 +285,7 @@ def process_files(filenames):
             ID = counter
             try:
                 text = data[index]
+                print("this")
             except KeyError:
                 text = data.iloc[index]["overview"]
             if text == "":
@@ -329,13 +326,13 @@ def process_files(filenames):
 
 
             dsi_df = pd.DataFrame.from_dict(s, orient="index")
-            dsi_df.to_csv('machine_DSI-lziv_output.csv', index=False)
+            dsi_df.to_csv('ALL_DSI-lziv_output.csv', index=False)
         elapsed_time = time.time() - start_time
         print('Elapsed time: ' + str(elapsed_time))
 
 
 # USER EDIT
-filenames = glob.glob("../machine_data_stories/final/*.json")
+filenames = glob.glob("./machine_data_stories/final/*.json")
 #filenames = glob.glob("./human_data_synopsis/TMDB_movies_subset.json")
 print(f"Number of files to process: {len(filenames)}")
 
