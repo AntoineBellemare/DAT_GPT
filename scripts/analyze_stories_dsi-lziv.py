@@ -335,7 +335,7 @@ def process_files(filenames):
 
 
 # USER EDIT
-filenames = glob.glob("./machine_data_stories/*nocrea*.json")
+filenames = glob.glob("../machine_data_stories/final/*.json")
 #filenames = glob.glob("./human_data_synopsis/TMDB_movies_subset.json")
 print(f"Number of files to process: {len(filenames)}")
 
