@@ -20,6 +20,8 @@ def embed(text_json, model="text-embedding-ada-002", chunk_size=500):
     responses = []
     for i in range(0, len(text_json), chunk_size):
         chunk = list(text_json.values())[i : i + chunk_size]
+        if isinstance(chunk[0], dict):
+            chunk = [c["overview"] for c in chunk]
         responses.append(openai.Embedding.create(model=model, input=chunk))
 
     response = []
@@ -52,3 +54,11 @@ def embed_all_stories(basedir="machine_data_stories/"):
 
 
 embed_all_stories()
+embed_all_stories(basedir="machine_data_stories/final/")
+
+# embed the word "nature" to analyze the theme of Haikus
+print("Embedding the word 'nature'", end="...")
+nature_vec = embed(["nature"])["0"]
+with open("machine_data_stories/final/embeddings/nature_vec.json", "w") as f:
+    json.dump(nature_vec, f)
+print("done")
