@@ -26,16 +26,13 @@ strategies = {"nothing":NOTHING,
               "opposites":STRATEGY_OPP,
               "thesaurus":STRATEGY_THE}
 # keys
-anthropic.api_key = "sk-ant-C9z6Ea1-M-ITXRetrDmc4cYHJVh6PrEnlwvjdKmtFuU7L1-5sfk021GAHOYwxG_l2VOR-AXazlnRH9PXo1ngSQ" # add your key here
-
+api_key = "" # add your key here
+client = anthropic.Anthropic(api_key=api_key)
 def generate_response(text, temp):
-    client = anthropic.Client(anthropic.api_key)
-    if temp is None:
-        temp = 0.7
-    response = client.completion(prompt=f"{anthropic.HUMAN_PROMPT} {text} {anthropic.AI_PROMPT}",
-                                 model="claude-v1", stop_sequences = [anthropic.HUMAN_PROMPT],
+    response = client.completions.create(prompt=f"{anthropic.HUMAN_PROMPT} {text} {anthropic.AI_PROMPT}",
+                                 model="claude-2",
                                  temperature=temp, max_tokens_to_sample=100,)
-    return response['completion']
+    return response.completion
 
 @click.command()
 @click.argument("filename", type=str)  

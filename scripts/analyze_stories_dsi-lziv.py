@@ -207,7 +207,7 @@ def plot_cluster_plot(embeddings_2d, cluster_labels, dsi, sentences, output_path
 
 def process_files(filenames):
     """
-    Process files and return a dictionary of story IDs and their DSI scores.
+    Process files and save a csv file containing story IDs, their DSI scores and Lempel-Ziv complexity.
 
     DSI scores are calculated using the following steps:
     1. Tokenize sentences using NLTK's PunktSentenceTokenizer
