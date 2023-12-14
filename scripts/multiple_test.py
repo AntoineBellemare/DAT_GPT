@@ -190,8 +190,8 @@ def most_common_words(words_list, n):
 
 def create_bar_plot(word_counts, n_lists=None, ylim=(0, 90),
                     palette_name='Set2', save=False, modelname=' ',
-                    temp=' ', strategy=' ', alpha=0.8):
-    title = '{} ({} temperature)'.format(modelname, temp)
+                    temp=' ', strategy=' ', alpha=0.8, title='Top 10 words'):
+    #title = '{} ({} temperature)'.format(modelname, temp)
     filename = '{}_word-counts_{}_{}.png'.format(modelname, temp, strategy)
     if n_lists is None:
         n_lists = len(word_counts)/10
@@ -199,23 +199,29 @@ def create_bar_plot(word_counts, n_lists=None, ylim=(0, 90),
     num_words = len(words)
     
     # Create an array of colors
-    colors = plt.get_cmap(palette_name)(np.linspace(0.6, 0.8, num_words))
+    #colors = plt.get_cmap(palette_name)(np.linspace(0.6, 0.8, num_words))
     
     # Set the bar width to have more space between bars
     bar_width = 0.5
     
     # Create the bar plot
     fig, ax = plt.subplots()
-    bars = ax.bar(words, [(x/n_lists)*100 for x in counts], width=bar_width, color=colors, alpha=alpha)
+    bars = ax.bar(words, [(x/n_lists)*100 for x in counts], width=bar_width, color=palette_name, alpha=alpha)
     
+    # change x label size
+    ax.tick_params(axis='x', labelsize=12)
+    
+    #change y label size
+    ax.tick_params(axis='y', labelsize=12)
     # Add angle to the bar labels
     for label in ax.get_xticklabels():
         label.set_rotation(45)
     
     # Set plot labels and title
-    ax.set_xlabel('Words')
-    ax.set_ylabel('Percentage (%)')
-    ax.set_title('Top 10 Most Common Words - {}'.format(title))
+    ax.set_xlabel('Words', fontsize=14)
+    ax.set_ylabel('Percentage (%)', fontsize=14)
+    #ax.set_title('Top 10 Most Common Words - {}'.format(title))
+    ax.set_title(title, fontsize=18)
     ax.set_ylim(ylim)
     # Adjust the bottom margin to prevent cropping of labels when saving
     plt.subplots_adjust(bottom=0.25)
