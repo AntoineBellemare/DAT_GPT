@@ -1,0 +1,45 @@
+Temperature: Low
+Score: 89.51365271849292
+Words: ocean, giraffe, microscope, democracy, candle, avalanche, saxophone, pizza, gravestone, rainbow
+
+------
+Temperature: Low
+Score: 89.50063099286386
+Words: elephant, galaxy, microscope, sandcastle, philosophy, tambourine, refrigerator, volcano, shoelace, democracy
+
+------
+Temperature: Low
+Score: 88.91549311967017
+Words: elephant, telescope, democracy, sandpaper, refrigerator, emotion, volcano, shoelace, algorithm, pineapple
+
+------
+Temperature: Mid
+Score: 92.76401916008795
+Words: hippopotamus, laptop, sunshine, treaty, sneaker, perseverance, tangerine, flute, thunderstorm, gratitude
+
+------
+Temperature: Mid
+Score: 92.7393924400565
+Words: platypus, volcano, trombone, sapphire, harmony, insurance, paprika, lighthouse, gravitation, topiary
+
+------
+Temperature: Mid
+Score: 92.3815943300724
+Words: antelope, umbrella, sushi, chimney, hydrogen, tambourine, algorithm, aspen, calligraphy, hindsight
+
+------
+Temperature: High
+Score: 95.59967855595804
+Words: volcano, mongoose, citizenship, warehouse, clarinet, quartz, chlorophyll, ambiguity, vinyl, frosting
+
+------
+Temperature: High
+Score: 94.31508717437586
+Words: lighthouse, vermicelli, arithmetic, echidna, swamp, pajamas, comedian, friction, triangle, pasture
+
+------
+Temperature: High
+Score: 94.12096107400777
+Words: pharaoh, magnet, mulberry, justice, retrovirus, carburetor, cartography, hinge, ballet, clay
+
+------

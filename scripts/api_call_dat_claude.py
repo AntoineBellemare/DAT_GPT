@@ -8,8 +8,7 @@ warnings.filterwarnings('ignore')
 
 import anthropic
 NOTHING="Make a list of 10 words"
-YOUNG_NO="Please enter 10 words that are as different from each other as possible, in all meanings and uses of the words. Answer from the perspective of a child. Rules: Only single words in English. Only nouns (e.g., things, objects, concepts). No proper nouns (e.g., no specific people or places). No specialised vocabulary (e.g., no technical terms). Think of the words on your own (e.g., do not just look at objects in your surroundings).  Make a list of these 10 words, a single word in each entry of the list."
-NO_STRATEGY="Please enter 10 words that are as different from each other as possible, in all meanings and uses of the words. Rules: Only single words in English. Only nouns (e.g., things, objects, concepts). No proper nouns (e.g., no specific people or places). No specialised vocabulary (e.g., no technical terms). Think of the words on your own (e.g., do not just look at objects in your surroundings).  Make a list of these 10 words, a single word in each entry of the list."
+NO_STRATEGY="Please enter 10 words that are as different from each other as possible, in all meanings and uses of the words. Rules: Only single words in English. Only nouns (e.g., things, objects, concepts). No proper nouns (e.g., no specific people or places). No specialised vocabulary (e.g., no technical terms). Think of the words on your own (e.g., do not just look at objects in your surroundings).  Make a list of these 10 words, a single word in each entry of the list. ONLY WRITE THE LIST NOTHING MORE."
 
 STRATEGY_THE="Please enter 10 words that are as different from each other as possible, in all meanings and uses of the words, using a strategy that relies on using a thesaurus. Rules: Only single words in English. Only nouns (e.g., things, objects, concepts). No proper nouns (e.g., no specific people or places). No specialised vocabulary (e.g., no technical terms). Think of the words on your own (e.g., do not just look at objects in your surroundings). Make a list of these 10 words, a single word in each entry of the list."
 
@@ -19,20 +18,21 @@ STRATEGY_OPP="Please enter 10 words that are as different from each other as pos
 
 STRATEGY_RAND="Please enter 10 words that are as different from each other as possible, in all meanings and uses of the words, using a strategy that relies on randomness. Rules: Only single words in English. Only nouns (e.g., things, objects, concepts). No proper nouns (e.g., no specific people or places). No specialised vocabulary (e.g., no technical terms). Think of the words on your own (e.g., do not just look at objects in your surroundings). Make a list of these 10 words, a single word in each entry of the list."
 strategies = {"nothing":NOTHING,
-              "young":YOUNG_NO,
               "none":NO_STRATEGY,
               "etymology":STRATEGY_ETYM,
               "random":STRATEGY_RAND,
               "opposites":STRATEGY_OPP,
               "thesaurus":STRATEGY_THE}
 # keys
-api_key = "" # add your key here
+api_key = "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" # add your key here
 client = anthropic.Anthropic(api_key=api_key)
 def generate_response(text, temp):
-    response = client.completions.create(prompt=f"{anthropic.HUMAN_PROMPT} {text} {anthropic.AI_PROMPT}",
-                                 model="claude-2",
-                                 temperature=temp, max_tokens_to_sample=100,)
-    return response.completion
+    response = client.messages.create(messages=[{"role": "user",
+                                                 "content": text}],
+                                      model="claude-3-5-sonnet-latest",
+                                      temperature=temp,
+                                      max_tokens=80)
+    return response.content[0].text
 
 @click.command()
 @click.argument("filename", type=str)  
