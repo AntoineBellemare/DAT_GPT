@@ -1,6 +1,4 @@
 Model,Count
-Bard,572
-Pythia,694
 GPT-3,682
 GPT-4,504
 Claude,989
@@ -17,4 +15,3 @@ GPT-4-1106,496
 Llama3,489
 Llama3-70B,457
 Capybara,452
-StableLM-oasst,1442
