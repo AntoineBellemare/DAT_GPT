@@ -24,7 +24,7 @@ strategies = {"nothing":NOTHING,
               "opposites":STRATEGY_OPP,
               "thesaurus":STRATEGY_THE}
 # keys
-api_key = "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" # add your key here
+api_key = "" # add your key here
 client = anthropic.Anthropic(api_key=api_key)
 def generate_response(text, temp):
     response = client.messages.create(messages=[{"role": "user",
