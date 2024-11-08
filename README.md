@@ -1,6 +1,6 @@
 # Divergent Creativity in Humans and Large Language Models
 
-This repository contains the code and data for the paper "Divergent Creativity in Humans and Large Language Models".
+This repository contains the code and data for the paper ["Divergent Creativity in Humans and Large Language Models"](https://arxiv.org/abs/2405.13012).
 
 ## Abstract
 
@@ -19,8 +19,10 @@ The data for this paper is located in the `human_data_dat` and `machine_data_sto
 
 The code for this paper is located in the `notebook` and `scripts` directories.
 
-*   `notebook` contains Jupyter notebooks that reproduce the figures in the paper.
-*   `scripts` contains Python scripts that perform API calls to closed-source LLMs, local inference for open-source models, and the DAT and DSI computation.
+*   `notebook` contains Jupyter notebooks that reproduce the figures in the paper. ``dat_visualization.ipynb`` and ``dsi_visualization.ipynb`` contain main figures
+*   `scripts` contains Python scripts that perform API calls to closed-source LLMs, local inference for open-source models, and the DAT (from [Olson et al. 2019](https://www.pnas.org/doi/pdf/10.1073/pnas.2022340118)) and DSI (from [Jonhson et al., 2023](https://link.springer.com/article/10.3758/s13428-022-01986-2)) computation.
+
+**NOTE:** Some scripts are now outdated due to the fast pace of LLM development. They remain on this repo for posterity even though they can no longer be reproduced. 
 
 
 ## Requirements
