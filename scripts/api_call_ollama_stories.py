@@ -4,6 +4,9 @@ import json
 import click
 import logging
 import warnings
+from pathlib import Path
+from typing import Dict, Optional
+from tenacity import retry, stop_after_attempt, wait_exponential
 import ollama
 
 warnings.filterwarnings('ignore')
@@ -14,8 +17,19 @@ PROMPTS = {
     "haiku": "Write a creative haiku following the 5-7-5 syllable pattern."
 }
 
-def generate_ollama_response(prompt, temp, model_name):
-    """Generates a response from Ollama."""
+@retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10))
+def generate_ollama_response(prompt: str, temp: Optional[float], model_name: str) -> Optional[str]:
+    """
+    Generate a response from Ollama with retry logic.
+    
+    Args:
+        prompt: The prompt to send to the model
+        temp: Temperature parameter for generation
+        model_name: Name of the Ollama model to use
+        
+    Returns:
+        Generated text response or None if failed
+    """
     try:
         response = ollama.generate(
             model=model_name,
@@ -26,18 +40,26 @@ def generate_ollama_response(prompt, temp, model_name):
         )
         return response['response'].strip()
     except Exception as e:
-        logging.error(f"Error generating response: {e}")
-        time.sleep(20)  # Wait in case of rate limiting
-        return None
+        logging.error(f"Error generating response: {str(e)}")
+        raise
+
+def save_progress(output: Dict, filepath: Path) -> None:
+    """Save current progress to JSON file."""
+    filepath.parent.mkdir(parents=True, exist_ok=True)
+    with open(filepath, 'w') as f:
+        json.dump(output, f, indent=2)
 
 @click.command()
 @click.argument("filename", type=str)
-@click.option("--file_path", type=str, help="Path to save output files")
+@click.option("--file_path", type=str, default="./", help="Path to save output files")
 @click.option("--strategy", type=str, default="synopsis", help="Type of story to generate")
 @click.option("--temp", type=float, help="Temperature parameter")
-@click.option("--iter_nb", type=str, help="Iteration number")
+@click.option("--iter_nb", type=str, default="0", help="Iteration number")
 @click.option("--model", type=str, default="llama2", help="Ollama model to use")
-def main(filename, file_path="./", strategy="synopsis", temp=None, iter_nb="0", model="llama2"):
+@click.option("--num_samples", type=int, default=100, help="Number of samples to generate")
+def main(filename: str, file_path: str="./", strategy: str="synopsis", 
+         temp: Optional[float]=None, iter_nb: str="0", model: str="llama2",
+         num_samples: int=100) -> None:
     """
     Generate creative stories using Ollama API.
     
@@ -48,42 +70,52 @@ def main(filename, file_path="./", strategy="synopsis", temp=None, iter_nb="0", 
         temp: Temperature parameter for generation
         iter_nb: Iteration number for multiple runs
         model: Ollama model name to use
+        num_samples: Number of samples to generate
     """
     logger = logging.getLogger(__name__)
     
     if strategy not in PROMPTS:
         raise ValueError(f"Invalid strategy. Must be one of {list(PROMPTS.keys())}")
     
-    output = {}
-    num_samples = 100  # Number of stories to generate
+    output_path = Path(file_path) / f"{filename}.json"
+    output: Dict = {}
     
-    for i in range(num_samples):
+    # Resume from existing progress if file exists
+    if output_path.exists():
+        with open(output_path) as f:
+            output = json.load(f)
+        start_idx = max(map(int, output.keys())) + 1 if output else 0
+        logger.info(f"Resuming from sample {start_idx}")
+    else:
+        start_idx = 0
+    
+    for i in range(start_idx, num_samples):
         logger.info(f"Generating story {i+1}/{num_samples}")
         
         try:
             response = generate_ollama_response(PROMPTS[strategy], temp, model)
             if response:
-                output[i] = response
+                output[str(i)] = response
                 logger.info(f"Successfully generated story {i+1}")
+                # Save progress after each successful generation
+                save_progress(output, output_path)
             else:
                 logger.warning(f"Empty response for story {i+1}")
         except Exception as e:
-            logger.error(f"Failed to generate story {i+1}: {e}")
-            time.sleep(3)
+            logger.error(f"Failed to generate story {i+1}: {str(e)}")
             continue
-        
-        # Save progress after each successful generation
-        output_file = os.path.join(file_path, f"{filename}.json")
-        os.makedirs(os.path.dirname(output_file), exist_ok=True)
-        
-        with open(output_file, "w") as outfile:
-            json.dump(output, outfile, indent=2)
         
         time.sleep(0.05)  # Rate limiting precaution
     
     logger.info(f"Generation complete. Generated {len(output)} stories.")
 
 if __name__ == "__main__":
-    log_fmt = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-    logging.basicConfig(level=logging.INFO, format=log_fmt)
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+        handlers=[
+            logging.StreamHandler(),
+            logging.FileHandler('ollama_stories.log')
+        ]
+    )
     main()
