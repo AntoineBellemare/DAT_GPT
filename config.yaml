@@ -1,7 +1,7 @@
 llms:
   llama:
     script: "scripts/api_call_ollama_stories.py"
-    model: ["llama3", "llama3.1", "llama3.2","gemma2:27b"]
+    model: ["llama3", "llama3.1", "llama3.2", "gemma2:27b"]
     strategies: ["synopsis", "flash-fiction", "haiku"]
     output_dir: "./ollama_stories"
   openai:
@@ -17,9 +17,8 @@ llms:
     temperatures: [0.5, 1.0, 1.5]
     output_dir: "./gemini_stories"
   anthropic:
-    script: "scripts/api_call_anthropic_stories.py"
-    model: [""claude-3-5-sonnet-latest", "claude-3-5-haiku-latest"]
+    script: "scripts/api_call_anthropic_stories.py" 
+    model: ["claude-3-5-sonnet-latest", "claude-3-5-haiku-latest"]
     strategies: ["synopsis", "flash-fiction", "haiku"]
     output_dir: "./anthropic_stories"
-  
 
