@@ -1,12 +1,10 @@
-pyChatGPT
+#pyChatGPT
+#Bard
 click
-twocaptcha
 numpy
-dat
 openai
 seaborn
 scipy
-dat
 anthropic
 torch
 transformers
@@ -15,3 +13,5 @@ matplotlib
 nltk
 einops
 accelerate
+google-generativeai
+llama-cpp-python
