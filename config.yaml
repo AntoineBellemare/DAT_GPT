@@ -7,11 +7,7 @@ llms:
     script: "scripts/api_call_dat_gpt4.py"
   stablelm:  # Example for another LLM
     script: "scripts/api_call_dat_stablelm.py"
-    # Add any LLM-specific parameters here
-llms:
   gpt-3.5-turbo:
+    script: "scripts/api_call_dat_gpt35.py" # Replace with the actual script name if different
     temperature: [0.7, 1.0]
-    strategies: ["none", "thesaurus"]
-  stablelm:
-    temperature: [0.5, 0.8, 1.2]
-    strategies: ["none", "etymology", "random"]
+    strategies: ["none", "thesaurus"] # Example LLM-specific parameters

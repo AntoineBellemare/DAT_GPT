@@ -27,7 +27,13 @@ def run_experiment(config_file):
             ]
 
             print(f"Running command: {' '.join(command)}")
-            subprocess.run(command, check=True)
+            try:
+                subprocess.run(command, check=True, capture_output=True, text=True) # Capture output for logging
+            except subprocess.CalledProcessError as e:
+                print(f"Error running command: {e}")
+                print(f"Stdout: {e.stdout}")
+                print(f"Stderr: {e.stderr}")
+                # Implement retry logic or other error handling here if needed
 
 if __name__ == "__main__":
     run_experiment('config.yaml')
