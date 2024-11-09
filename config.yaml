@@ -1,13 +1,12 @@
 strategies: [none, etymology, random, thesaurus, opposites]
 temperatures: [0.7, 1.0, 1.2]
 iterations: 5
-filename_prefix: "dat_results"
+filename_prefix: "" # this has to be dynamically set from the llms: key in the config.yaml file
 llms:
   gpt4:
-    script: "scripts/api_call_dat_gpt4.py"
-  stablelm:  # Example for another LLM
-    script: "scripts/api_call_dat_stablelm.py"
-  gpt-3.5-turbo:
-    script: "scripts/api_call_dat_gpt35.py" # Replace with the actual script name if different
-    temperature: [0.7, 1.0]
-    strategies: ["none", "thesaurus"] # Example LLM-specific parameters
+    script: "scripts/api_call_stories_gpt4.py"
+    model: "gpt-4o"
+    strategies: ["synopsis", "flash-fiction", "haiku"]
+  llama:
+    script: "scripts/api_call_dat_ollama.py" # Replace with the actual script name if different
+    strategies: [ "etymology","thesaurus"] # Example LLM-specific parameters
