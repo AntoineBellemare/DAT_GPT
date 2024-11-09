@@ -1,12 +1,8 @@
 filename_prefix: ""
-temperatures: [0.7, 1.0, 1.2]
-iterations: 5
+
 llms:
-  gpt4:
-    script: "scripts/api_call_gpt4_stories.py"
-    model: "gpt-4-1106-preview"
+  llama:
+    script: "scripts/api_call_ollama_stories.py"
+    model: "gpt-4o"
     strategies: ["synopsis", "flash-fiction", "haiku"]
-  gpt35:
-    script: "scripts/api_call_gpt4_stories.py"
-    model: "gpt-3.5-turbo"
-    strategies: ["synopsis", "flash-fiction", "haiku"]
+    output_dir: "./ollama_stories"
