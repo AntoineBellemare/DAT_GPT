@@ -1,0 +1,10 @@
+strategies: [none, etymology, random, thesaurus, opposites]
+temperatures: [0.7, 1.0, 1.2]
+iterations: 5
+filename_prefix: "dat_results"
+llms:
+  gpt4:
+    script: "scripts/api_call_dat_gpt4.py"
+  stablelm:  # Example for another LLM
+    script: "scripts/api_call_dat_stablelm.py"
+    # Add any LLM-specific parameters here
