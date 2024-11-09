@@ -1,10 +1,25 @@
-filename_prefix: ""
-
 llms:
   llama:
     script: "scripts/api_call_ollama_stories.py"
-    model: "llama2"
+    model: ["llama3", "llama3.1", "llama3.2","gemma2:27b"]
     strategies: ["synopsis", "flash-fiction", "haiku"]
     output_dir: "./ollama_stories"
-    temperatures: [0.7, 1.0, 1.2]
-    iterations: 5
+  openai:
+    script: "scripts/api_call_gpt4.py"
+    model: ["gpt-4o-mini"]
+    strategies: ["synopsis", "flash-fiction", "haiku"]
+    temperatures: [0.5, 1.0, 1.5]
+    output_dir: "./openai_stories"
+  google:
+    script: "scripts/api_call_gemini_stories.py"
+    model: ["gemini-1.5-flash-latest", "gemini-1.5-pro-latest"]
+    strategies: ["synopsis", "flash-fiction", "haiku"]
+    temperatures: [0.5, 1.0, 1.5]
+    output_dir: "./gemini_stories"
+  anthropic:
+    script: "scripts/api_call_anthropic_stories.py"
+    model: [""claude-3-5-sonnet-latest", "claude-3-5-haiku-latest"]
+    strategies: ["synopsis", "flash-fiction", "haiku"]
+    output_dir: "./anthropic_stories"
+  
+
