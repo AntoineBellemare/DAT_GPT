@@ -35,8 +35,8 @@ strategies = {"synopsis":SYNOPSIS,
               "fable_nocrea":FABLE_nocrea,
               "french_poetic_flash_fiction":FRENCH_POETIC_FLASH_FICTION}
 # keys
-openai.organization = "org-IikrAbP4lhekGvM1idp66eqs"
-openai.api_key = "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"
+openai.organization = ""
+openai.api_key = ""
 
 def generate_response(text, temp):
     response = openai.ChatCompletion.create(model='gpt-4-0314', messages=[{"role":'assistant', "content":text}], temperature=temp)

@@ -184,8 +184,7 @@ def create_heatmap(
 
 def most_common_words(words_list, n):
     # Convert each word to lowercase
-    lowercase_words_list = [word.lower() for word in words_list]
-    counter = collections.Counter(lowercase_words_list)
+    counter = collections.Counter(words_list)
     return counter.most_common(n)
 
 def create_bar_plot(word_counts, n_lists=None, ylim=(0, 90),

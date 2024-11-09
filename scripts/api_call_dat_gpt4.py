@@ -25,7 +25,7 @@ strategies = {"nothing":NOTHING,
               "opposites":STRATEGY_OPP,
               "thesaurus":STRATEGY_THE}
 # keys
-openai.organization = "org-mQ56VzDhHkSj8tfM9HJ9DXVq"
+openai.organization = ""
 openai.api_key = ""
 
 def generate_response(text, temp):

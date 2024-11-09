@@ -1,0 +1,5 @@
+model/*
+notebook/figures/*
+samples/
+samples/*
+scripts/__pycache__/*
