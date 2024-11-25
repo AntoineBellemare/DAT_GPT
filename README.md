@@ -31,6 +31,10 @@ The requirements for running the code in this repository are listed in the `requ
 
 ## Running the Code
 
+You should have this version of python installed
+
+```python --version 3.10.8```
+
 To run the code in this repository, first install the requirements:
 
 ```pip install -r requirements.txt```
