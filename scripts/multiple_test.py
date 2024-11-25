@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import collections
 from scipy.stats import ttest_ind
 from statsmodels.stats.multitest import multipletests
+from pingouin import compute_effsize_from_t
 
 
 def analyze_results(results_df, variable, order):
@@ -21,19 +22,29 @@ def analyze_results(results_df, variable, order):
     # Contrast all models using nonparametric t-tests
     pvals = np.zeros((n_variables, n_variables))
     tvals = np.zeros((n_variables, n_variables))
+    cohen_ds = np.zeros((n_variables, n_variables))
     for i, model1 in enumerate(variables):
         for j, model2 in enumerate(variables):
             if i >= j:
                 continue
+            score1 = results_df[results_df[variable] == model1]["Score"].dropna()
+            score2 = results_df[results_df[variable] == model2]["Score"].dropna()
             res = ttest_ind(
-                results_df[results_df[variable] == model1]["Score"].dropna(),
-                results_df[results_df[variable] == model2]["Score"].dropna(),
+                score1,
+                score2,
                 alternative="two-sided",
+                equal_var=False,
             )
             pvals[i, j] = res.pvalue
             pvals[j, i] = res.pvalue
             tvals[i, j] = res.statistic
             tvals[j, i] = res.statistic
+            
+            # Compute Cohen's d
+            tval = res.statistic
+            nx, ny = len(score1), len(score2)
+            cohen_ds[i, j] = compute_effsize_from_t(tval, nx=nx, ny=ny, eftype='cohen')
+            cohen_ds[j, i] = cohen_ds[i, j]
 
     # Correct for multiple comparisons
     reject, pvals_corrected, _, _ = multipletests(
@@ -44,8 +55,10 @@ def analyze_results(results_df, variable, order):
         returnsorted=False,
     )
 
+    # Prepare tables for p-values, t-values and Cohen's d
     pvals_table = pd.DataFrame(index=variables, columns=variables, dtype=float)
     tvals_table = pd.DataFrame(index=variables, columns=variables, dtype=float)
+    cohen_d_table = pd.DataFrame(index=variables, columns=variables, dtype=float)
     for i, model1 in enumerate(variables):
         for j, model2 in enumerate(variables):
             if i >= j:
@@ -54,8 +67,10 @@ def analyze_results(results_df, variable, order):
             pvals_table.loc[model2, model1] = pvals_corrected[i * n_variables + j]
             tvals_table.loc[model1, model2] = tvals[i, j]
             tvals_table.loc[model2, model1] = tvals[j, i]
+            cohen_d_table.loc[model1, model2] = cohen_ds[i, j]
+            cohen_d_table.loc[model2, model1] = cohen_ds[j, i]
 
-    return mean_conf, pvals_table, tvals_table
+    return mean_conf, pvals_table, tvals_table, cohen_d_table
 
 
 def create_heatmap(
@@ -63,27 +78,28 @@ def create_heatmap(
     variable,
     tvals_table,
     pvals_table,
-    pal,
-    order,
+    cohen_d_table=None,
+    heatmap_type='t-values',  # Options: 't-values' or 'cohen-d'
+    pal=None,
+    order=None,
     color_order=None,
     xlim=(60, 90),
     save=None,
     large=(10, 5),
     rotation=90,
-    axis_name = 'Mean',
-    title_name = 'Mean DAT score',
+    axis_name='Mean',
+    title_name='Mean DAT score',
 ):
     # Generate a mask for the upper triangle
     mask = np.triu(np.ones_like(tvals_table, dtype=bool))
 
     # Set up the matplotlib figure
-    fig, axs = plt.subplots(
-        nrows=1, ncols=2, figsize=large
-    )
+    fig, axs = plt.subplots(nrows=1, ncols=2, figsize=large)
 
     if color_order is not None:
         pal = dict(zip(order, color_order))
 
+    # Bar plot
     bar_plot = sns.barplot(
         x=variable,
         y="mean",
@@ -94,7 +110,6 @@ def create_heatmap(
         errorbar=None,
     )
     bar_plot.set_xticklabels(order, rotation=rotation)
-    # Add error bars to the barplot
     for i, model in enumerate(order):
         model_data = mean_conf[mean_conf[variable] == model]
         error = model_data["sem"].values[0]
@@ -106,73 +121,60 @@ def create_heatmap(
             color="black",
             capsize=5,
         )
-    # remove x-axis title
     axs[0].set_xlabel("")
     axs[0].set_ylabel(axis_name)
-    # axs[0].set_xticklabels(order, rotation=20)
     axs[0].set_title(title_name)
-
-    # Set y-axis ticks manually
-    yticks = np.linspace(
-        xlim[0], xlim[1], num=6
-    )  # Change num to the desired number of ticks
+    yticks = np.linspace(xlim[0], xlim[1], num=6)
     bar_plot.set_yticks(yticks)
     bar_plot.set_ylim(xlim)
-    # set size of all fonts
     bar_plot.tick_params(labelsize=16)
-    # set size of title
     bar_plot.set_title(bar_plot.get_title(), fontsize=18, y=1.05)
-    # set size of x-axis label
-    bar_plot.set_xlabel(bar_plot.get_xlabel(), fontsize=18)
-    # set size of y-axis label
-    bar_plot.set_ylabel(bar_plot.get_ylabel(), fontsize=18)
-    # remove box around plot
     sns.despine(ax=axs[0], top=True, right=True, left=False, bottom=False)
-    # Generate the combined heat map for t-values and p-values
-    tvals_annot = tvals_table.applymap(lambda x: f"\n{x:.2f}")
-    pval_stars = pvals_table.applymap(
+
+    # Heatmap configuration
+    if heatmap_type == 'cohen-d' and cohen_d_table is not None:
+        heatmap_data = cohen_d_table
+        cmap = "Purples"
+        cbar_label = "Cohen's d"
+        vmax = heatmap_data.abs().max().max()
+    else:
+        heatmap_data = tvals_table
+        cmap = "coolwarm"
+        cbar_label = "t-values"
+        vmax = heatmap_data.abs().max().max()
+
+    # Prepare heatmap annotations
+    mask = mask[1:, :-1]
+    heatmap_data = heatmap_data.iloc[1:, :-1]
+    pval_stars = pvals_table.iloc[1:, :-1].applymap(
         lambda x: "***" if x < 0.001 else "**" if x < 0.01 else "*" if x < 0.05 else ""
     )
-    combined_annot = pval_stars + tvals_annot
-    max_tval = np.abs(tvals_table.values[~mask]).max()
-    # remove the first row and last column from the mask and the table
-    mask = mask[1:, :-1]
-    tvals_table = tvals_table.iloc[1:, :-1]
-    combined_annot = combined_annot.iloc[1:, :-1]
+    annotations = (
+        heatmap_data.applymap(lambda x: f"\n{x:.2f}")
+        if heatmap_type == 'cohen-d'
+        else heatmap_data.applymap(lambda x: f"\n{x:.2f}")
+    )
+    combined_annot = pval_stars + annotations
+
     sns.heatmap(
-        tvals_table,
+        heatmap_data,
         mask=mask,
         annot=combined_annot,
         fmt="",
-        cmap="coolwarm",
-        cbar_kws={"label": "t-value"},
+        cmap=cmap,
+        cbar_kws={"label": cbar_label},
         ax=axs[1],
-        vmin=-max_tval,
-        vmax=max_tval,
+        vmin=-vmax if heatmap_type != 'cohen-d' else 0,
+        vmax=vmax,
     )
-    # change label size
+
     axs[1].tick_params(labelsize=16)
-    # change title size
-    axs[1].set_title("Pairwise contrasts")
-    # set y label rotation
+    axs[1].set_title(f"Pairwise contrasts ({heatmap_type})", fontsize=18, y=1.05)
     axs[1].set_yticklabels(axs[1].get_yticklabels(), rotation=0)
-    # set axis title size
-    axs[1].set_xlabel(axs[1].get_xlabel(), fontsize=14)
-    axs[1].set_ylabel(axs[1].get_ylabel(), fontsize=14)
-    # set title size
-    axs[1].set_title(axs[1].get_title(), fontsize=18, y=1.05)
-    # change rotation of x-axis labels
     axs[1].set_xticklabels(axs[1].get_xticklabels(), rotation=rotation)
-    # change heatmap colorbar label size
     colorbar = axs[1].collections[0].colorbar
     colorbar.ax.tick_params(labelsize=12)
-    colorbar.set_label("t-values", fontsize=14)
-    
-
-    
-    
-    # axs[1].set_xticklabels(order, rotation=20)
-    # remove axis titles
+    colorbar.set_label(cbar_label, fontsize=14)
     axs[1].set_xlabel("")
     axs[1].set_ylabel("")
 
