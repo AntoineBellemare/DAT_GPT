@@ -15,3 +15,4 @@ einops
 accelerate
 google-generativeai
 llama-cpp-python
+jupyter
