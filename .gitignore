@@ -3,3 +3,4 @@ notebook/figures/*
 samples/
 samples/*
 scripts/__pycache__/*
+./*.json
