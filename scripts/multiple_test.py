@@ -83,6 +83,7 @@ def create_heatmap(
     pal=None,
     order=None,
     color_order=None,
+    only_stars=False,
     xlim=(60, 90),
     save=None,
     large=(10, 5),
@@ -154,7 +155,10 @@ def create_heatmap(
         if heatmap_type == 'cohen-d'
         else heatmap_data.applymap(lambda x: f"\n{x:.2f}")
     )
-    combined_annot = pval_stars + annotations
+    if only_stars is True:
+        combined_annot = pval_stars
+    else:
+        combined_annot = pval_stars + annotations
 
     sns.heatmap(
         heatmap_data,

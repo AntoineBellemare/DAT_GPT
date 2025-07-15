@@ -33,7 +33,7 @@ def generate_ollama_response(text, temp):
 
     # Generate a response from the model
     response = ollama.generate(
-        model="gemma2:27b",  # Or any other model you have available
+        model="hermes3:latest",  # Or any other model you have available
         prompt=text,
         options={
             "temperature": temp,

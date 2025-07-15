@@ -16,3 +16,5 @@ accelerate
 google-generativeai
 llama-cpp-python
 jupyter
+statsmodels
+pingouin
